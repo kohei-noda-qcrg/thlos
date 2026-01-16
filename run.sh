@@ -9,7 +9,7 @@ clang -std=c11 -O2 -g3 -Wall -Wextra \
     -ffreestanding \
     -nostdlib \
     -Wl,-Tkernel.ld -Wl,-Map=kernel.map \
-    -o kernel.elf kernel.c
+    -o kernel.elf kernel.c common.c
 
 QEMU=${QEMU:-qemu-system-riscv32}
 
