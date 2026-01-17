@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-clang -std=c11 -O2 -g3 -Wall -Wextra \
+clang -std=c23 -O2 -g3 -Wall -Wextra \
     --target=riscv32-unknown-elf \
     -fuse-ld=lld \
     -fno-stack-protector \
