@@ -30,4 +30,9 @@ SECTIONS{
     . += 128*1024; /* 128KB */
     __stack_top = .;
 
+    /* allocatable memory section */
+    . = ALIGN(4096); /* 4KB alignment/1 page */
+    __free_ram = .;
+    . += 64*1024*1024; /* 64MB */
+    __free_ram_end = .;
 }
