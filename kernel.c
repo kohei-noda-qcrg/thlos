@@ -32,8 +32,9 @@ void kernel_main(void) {
     const char* s = "\n\nHello World!\n";
     printf(s);
     printf("1 + 2 %d, %x %%\n", 1 + 2, 0x1234abcd);
-    for(;;)
-        ;
+
+    PANIC("booted");
+    printf("unreachable\n");
 }
 
 __attribute__((section(".text.boot")))
