@@ -3,6 +3,41 @@
 
 extern char __bss, __bss_end, __stack_top; // declare the symbols defined in kernel.ld
 
+__attribute__((naked))
+__attribute__((aligned(4))) void
+kernel_entry(void) {
+    __asm__ __volatile__(
+        "csrw sscratch, sp\n"
+        "addi sp, sp, -4 * 31\n"
+        ".irp reg,ra,gp,tp,t0,t1,t2,t3,t4,t5,t6,"
+        "a0,a1,a2,a3,a4,a5,a6,a7,"
+        "s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11\n"
+        "sw \\reg, 4*\\@ (sp)\n"
+        ".endr\n"
+
+        "csrr a0, sscratch\n"
+        "sw a0, 4*30(sp)\n"
+
+        "mv a0, sp\n"
+        "call handle_trap\n"
+
+        ".irp reg,ra,gp,tp,t0,t1,t2,t3,t4,t5,t6,"
+        "a0,a1,a2,a3,a4,a5,a6,a7,"
+        "s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,sp\n"
+        "lw \\reg, 4*\\@ (sp)\n"
+        ".endr\n"
+
+        "sret\n");
+}
+
+void handle_trap(struct trap_frame* f) {
+    uint32_t scause  = READ_CSR(scause);
+    uint32_t stval   = READ_CSR(stval);
+    uint32_t user_pc = READ_CSR(sepc);
+
+    PANIC("unexpected trap scause=%x, stval=%x, spec=%x\n", scause, stval, user_pc);
+}
+
 struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4, long arg5, long fid, long eid) {
     REGISTER(a0, arg0)
     REGISTER(a1, arg1)
@@ -33,8 +68,8 @@ void kernel_main(void) {
     printf(s);
     printf("1 + 2 %d, %x %%\n", 1 + 2, 0x1234abcd);
 
-    PANIC("booted");
-    printf("unreachable\n");
+    WRITE_CSR(stvec, (uint32_t)kernel_entry);
+    __asm__ __volatile__("unimp"); // invalid instruction
 }
 
 __attribute__((section(".text.boot")))
